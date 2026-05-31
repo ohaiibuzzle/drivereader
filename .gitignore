@@ -1,0 +1,13 @@
+# Secret credentials
+.env
+.env.local
+*.local
+
+# Build output
+dist/
+
+# macOS
+.DS_Store
+
+# Node modules
+node_modules/
