@@ -49,6 +49,9 @@ async function openRecent(id: string, name: string) {
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
+const baseUrl = window.location.href
+
 </script>
 
 <template>
@@ -60,7 +63,7 @@ function formatDate(ts: number) {
       </svg>
       <h1 class="text-3xl font-semibold text-white tracking-tight">DriveReader</h1>
       <p class="text-slate-400 text-sm max-w-xs">
-        Paste a public Google Drive folder link to read its images as a book — no sign-in required.
+        Paste a public Google Drive folder link to read its images as a book.
       </p>
     </div>
 
@@ -89,9 +92,11 @@ function formatDate(ts: number) {
 
       <p v-if="error" class="text-red-400 text-sm px-1">{{ error }}</p>
 
-      <p class="text-slate-600 text-xs px-1">
-        The folder must be shared as "Anyone with the link can view".
-      </p>
+      <div class="text-slate-600 text-xs px-1">
+        <p>The folder must be shared as "Anyone with the link can view" permissions.</p>
+        <p class="mt-2">You can also hotlink to this page to open a folder directly:</p>
+        <pre class="mt-2 overflow-x-auto rounded-xl bg-slate-800 p-3 text-slate-200 text-xs"><code>{{ baseUrl }}reader/{folder_id}?dir=ltr</code></pre>
+      </div>
     </div>
 
     <!-- recent folders -->
