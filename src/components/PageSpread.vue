@@ -40,7 +40,7 @@ function onRightClick() {
 </script>
 
 <template>
-  <div class="overflow-auto bg-slate-950 flex items-center justify-center select-none min-h-full">
+  <div class="overflow-auto flex items-center justify-center select-none min-h-full">
     <div
       :style="{ transform: `scale(${zoom})`, transformOrigin: 'center center' }"
       class="transition-transform duration-150"

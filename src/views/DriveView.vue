@@ -6,7 +6,6 @@ import { useReaderStore } from '../stores/reader'
 import { usePreferencesStore } from '../stores/preferences'
 import type { DriveFile } from '../types/drive'
 import { isMostlyImages } from '../composables/useImageDetection'
-import { extractDriveId } from '../api/drive'
 import DriveToolbar from '../components/DriveToolbar.vue'
 import BrowserControls from '../components/BrowserControls.vue'
 import FileGrid from '../components/FileGrid.vue'
@@ -106,7 +105,7 @@ async function onOpenLink(id: string) {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen bg-slate-900 text-slate-200">
+  <div class="flex flex-col h-screen bg-[#e0e0e0] dark:bg-black text-slate-800 dark:text-slate-200">
     <DriveToolbar
       :breadcrumbs="drive.breadcrumbs"
       @breadcrumb-click="drive.goToBreadcrumb($event)"
@@ -150,7 +149,7 @@ async function onOpenLink(id: string) {
     <Transition name="toast">
       <div
         v-if="linkError"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-200 text-sm px-4 py-3 rounded-xl shadow-lg max-w-sm w-full text-center"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-100 dark:bg-red-900/90 text-red-700 dark:text-red-200 text-sm px-4 py-3 rounded-xl shadow-lg max-w-sm w-full text-center"
         @click="linkError = ''"
       >
         {{ linkError }}

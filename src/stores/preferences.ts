@@ -17,22 +17,29 @@ export const usePreferencesStore = defineStore('preferences', () => {
   const viewMode = ref<ViewMode>((stored.viewMode as ViewMode) ?? 'grid')
   const sortBy = ref<SortBy>((stored.sortBy as SortBy) ?? 'modifiedTime')
   const sortDir = ref<SortDir>((stored.sortDir as SortDir) ?? 'desc')
+  const systemTheme: 'dark' | 'light' = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const theme = ref<'dark' | 'light'>((stored.theme as 'dark' | 'light') ?? systemTheme)
 
   // Drive API orderBy string
   const orderBy = computed(() =>
     sortDir.value === 'desc' ? `${sortBy.value} desc` : sortBy.value,
   )
 
-  watch([viewMode, sortBy, sortDir], () => {
+  watch([viewMode, sortBy, sortDir, theme], () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       viewMode: viewMode.value,
       sortBy: sortBy.value,
       sortDir: sortDir.value,
+      theme: theme.value,
     }))
   })
 
   function toggleView() {
     viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid'
+  }
+
+  function toggleTheme() {
+    theme.value = theme.value === 'dark' ? 'light' : 'dark'
   }
 
   function setSortBy(by: SortBy) {
@@ -45,5 +52,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     }
   }
 
-  return { viewMode, sortBy, sortDir, orderBy, toggleView, setSortBy }
+  return { viewMode, sortBy, sortDir, orderBy, theme, toggleView, setSortBy, toggleTheme }
 })

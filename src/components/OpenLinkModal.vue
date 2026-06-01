@@ -38,26 +38,26 @@ function onKeydown(e: KeyboardEvent) {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click.self="onClose">
-        <div class="bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 flex flex-col gap-4">
           <div>
-            <h2 class="text-white font-semibold text-lg">Open from link</h2>
-            <p class="text-slate-400 text-sm mt-1">Paste a Google Drive folder share link</p>
+            <h2 class="text-slate-900 dark:text-white font-semibold text-lg">Open from link</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Paste a Google Drive folder share link</p>
           </div>
 
           <textarea
             v-model="input"
             rows="3"
             placeholder="https://drive.google.com/drive/folders/..."
-            class="w-full bg-slate-700 text-slate-200 placeholder-slate-500 rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+            class="w-full bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 border border-slate-200 dark:border-transparent rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
             autofocus
             @keydown="onKeydown"
           />
 
-          <p v-if="errorMsg" class="text-red-400 text-sm">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="text-red-600 dark:text-red-400 text-sm">{{ errorMsg }}</p>
 
           <div class="flex gap-3 justify-end">
             <button
-              class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-medium transition-colors"
+              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium transition-colors"
               @click="onClose"
             >
               Cancel

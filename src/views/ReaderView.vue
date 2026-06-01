@@ -66,7 +66,7 @@ onUnmounted(() => {
 
 <template>
   <!-- Flat stacking context — image fills the full viewport, bars float over it -->
-  <div class="relative h-dvh w-screen bg-slate-950 overflow-hidden">
+  <div class="relative h-dvh w-screen overflow-hidden transition-colors duration-200 bg-[#e0e0e0] dark:bg-black">
 
     <!-- loading -->
     <div v-if="reader.loading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">
