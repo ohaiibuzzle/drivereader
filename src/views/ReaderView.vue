@@ -106,7 +106,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
             </svg>
           </button>
-          <h1 class="text-white/90 font-medium text-sm truncate flex-1 drop-shadow">{{ reader.folderName }}</h1>
+          <div class="flex-1 min-w-0">
+            <h1 class="text-white/90 font-medium text-sm truncate drop-shadow">{{ reader.folderName }}</h1>
+            <p v-if="reader.pages[reader.currentIndex]" class="text-white/50 text-xs truncate drop-shadow mt-0.5">{{ reader.pages[reader.currentIndex].name }}</p>
+          </div>
           <button
             class="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 transition-colors backdrop-blur-sm shrink-0"
             :class="copied ? 'text-emerald-400' : 'text-slate-200 hover:text-white'"
