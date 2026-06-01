@@ -113,7 +113,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
           <button
             class="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 transition-colors backdrop-blur-sm shrink-0"
             :class="copied ? 'text-emerald-400' : 'text-slate-200 hover:text-white'"
-            :title="copied ? 'Copied!' : 'Copy link to this book'"
+            :title="copied ? 'Copied!' : 'Copy reader link to this folder'"
             @click="copyLink"
             aria-label="Copy link"
           >
