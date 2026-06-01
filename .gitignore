@@ -2,9 +2,11 @@
 .env
 .env.local
 *.local
+worker/.dev.vars
 
 # Build output
 dist/
+worker/.wrangler/
 
 # macOS
 .DS_Store

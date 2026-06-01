@@ -1,57 +1,53 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { DriveFile, BreadcrumbEntry } from '../types/drive'
-import { listFolder, listSharedWithMe, getFileMetadata } from '../api/drive'
-import { useAuthStore } from './auth'
+import { listFolder, getFileMetadata } from '../api/drive'
 import { usePreferencesStore } from './preferences'
 
 const SHARED_ROOT_ID = '__shared_with_me__'
 const FOLDER_MIME = 'application/vnd.google-apps.folder'
+const RECENTS_KEY = 'drivereader-recents'
+const MAX_RECENTS = 8
+
+export interface RecentFolder {
+  id: string
+  name: string
+  accessedAt: number
+}
+
+function readRecents(): RecentFolder[] {
+  try { return JSON.parse(localStorage.getItem(RECENTS_KEY) ?? '[]') } catch { return [] }
+}
+
+function saveRecent(id: string, name: string) {
+  const all = readRecents().filter((r) => r.id !== id)
+  all.unshift({ id, name, accessedAt: Date.now() })
+  localStorage.setItem(RECENTS_KEY, JSON.stringify(all.slice(0, MAX_RECENTS)))
+}
 
 export const useDriveStore = defineStore('drive', () => {
   const items = ref<DriveFile[]>([])
   const breadcrumbs = ref<BreadcrumbEntry[]>([])
-  const activeRoot = ref<'my-drive' | 'shared-with-me'>('my-drive')
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const recents = ref<RecentFolder[]>(readRecents())
 
   const currentFolderId = computed(
-    () => breadcrumbs.value[breadcrumbs.value.length - 1]?.id ?? 'root',
+    () => breadcrumbs.value[breadcrumbs.value.length - 1]?.id ?? '',
   )
-
-  async function withToken<T>(fn: (token: string) => Promise<T>): Promise<T> {
-    const auth = useAuthStore()
-    const tok = await auth.ensureToken()
-    return fn(tok)
-  }
 
   async function loadItems(folderId: string) {
     const prefs = usePreferencesStore()
     loading.value = true
     error.value = null
     try {
-      if (folderId === SHARED_ROOT_ID) {
-        items.value = await withToken((tok) => listSharedWithMe(tok, prefs.orderBy))
-      } else {
-        items.value = await withToken((tok) => listFolder(tok, folderId, prefs.orderBy))
-      }
+      items.value = await listFolder(folderId, prefs.orderBy)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load folder'
+      items.value = []
     } finally {
       loading.value = false
     }
-  }
-
-  async function listRoot() {
-    activeRoot.value = 'my-drive'
-    breadcrumbs.value = [{ id: 'root', name: 'My Drive' }]
-    await loadItems('root')
-  }
-
-  async function listSharedWithMeRoot() {
-    activeRoot.value = 'shared-with-me'
-    breadcrumbs.value = [{ id: SHARED_ROOT_ID, name: 'Shared with me' }]
-    await loadItems(SHARED_ROOT_ID)
   }
 
   async function enterFolder(id: string, name: string) {
@@ -66,32 +62,32 @@ export const useDriveStore = defineStore('drive', () => {
     await loadItems(crumb.id)
   }
 
-  /** Re-fetch the current folder (e.g. when sort changes). */
   async function reload() {
-    await loadItems(currentFolderId.value)
+    if (currentFolderId.value && currentFolderId.value !== SHARED_ROOT_ID) {
+      await loadItems(currentFolderId.value)
+    }
   }
 
   /** Navigate to an arbitrary folder by ID (e.g. from a pasted link). */
   async function openById(fileId: string): Promise<DriveFile> {
-    const meta = await withToken((tok) => getFileMetadata(tok, fileId))
+    const meta = await getFileMetadata(fileId)
     if (meta.mimeType !== FOLDER_MIME) {
-      throw new Error('The link points to a file, not a folder. Please paste a folder link.')
+      throw new Error('That link points to a file, not a folder. Please paste a folder link.')
     }
-    activeRoot.value = 'my-drive'
     breadcrumbs.value = [{ id: meta.id, name: meta.name }]
     await loadItems(meta.id)
+    saveRecent(meta.id, meta.name)
+    recents.value = readRecents()
     return meta
   }
 
   return {
     items,
     breadcrumbs,
-    activeRoot,
     loading,
     error,
+    recents,
     currentFolderId,
-    listRoot,
-    listSharedWithMeRoot,
     enterFolder,
     goToBreadcrumb,
     reload,

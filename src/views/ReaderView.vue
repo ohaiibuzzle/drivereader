@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useReaderStore } from '../stores/reader'
 import { useDriveStore } from '../stores/drive'
 import { useAutoHide } from '../composables/useAutoHide'
+
 import PageSpread from '../components/PageSpread.vue'
 import ReaderControls from '../components/ReaderControls.vue'
 
@@ -24,7 +25,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  reader.close()
+  reader.reset()
 })
 
 function onNavigate(dir: 'prev' | 'next') {

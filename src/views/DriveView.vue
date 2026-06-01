@@ -6,6 +6,7 @@ import { useReaderStore } from '../stores/reader'
 import { usePreferencesStore } from '../stores/preferences'
 import type { DriveFile } from '../types/drive'
 import { isMostlyImages } from '../composables/useImageDetection'
+import { extractDriveId } from '../api/drive'
 import DriveToolbar from '../components/DriveToolbar.vue'
 import BrowserControls from '../components/BrowserControls.vue'
 import FileGrid from '../components/FileGrid.vue'
@@ -21,7 +22,6 @@ const drive = useDriveStore()
 const reader = useReaderStore()
 const prefs = usePreferencesStore()
 
-const tab = ref<'my-drive' | 'shared'>('my-drive')
 const pendingFolder = ref<DriveFile | null>(null)
 const showBookModal = ref(false)
 const showDirectionModal = ref(false)
@@ -29,28 +29,31 @@ const showLinkModal = ref(false)
 const linkError = ref('')
 
 onMounted(() => {
-  drive.listRoot()
-})
-
-// Re-fetch when sort changes
-watch([() => prefs.sortBy, () => prefs.sortDir], () => {
-  drive.reload()
-})
-
-function onTabChange(t: 'my-drive' | 'shared') {
-  tab.value = t
-  if (t === 'my-drive') {
-    drive.listRoot()
-  } else {
-    drive.listSharedWithMeRoot()
+  // Redirect to home if there's nothing loaded (e.g. direct navigation to /drive)
+  if (!drive.loading && drive.items.length === 0 && !drive.currentFolderId) {
+    router.replace({ name: 'home' })
   }
-}
+})
+
+watch([() => prefs.sortBy, () => prefs.sortDir], () => { drive.reload() })
 
 function checkForBook(folder: DriveFile) {
   if (isMostlyImages(drive.items)) {
     pendingFolder.value = folder
     showBookModal.value = true
   }
+}
+
+function forceOpenReader() {
+  const crumb = drive.breadcrumbs[drive.breadcrumbs.length - 1]
+  if (!crumb) return
+  pendingFolder.value = {
+    id: crumb.id,
+    name: crumb.name,
+    mimeType: 'application/vnd.google-apps.folder',
+    modifiedTime: '',
+  }
+  showDirectionModal.value = true
 }
 
 async function onFileSelect(file: DriveFile) {
@@ -84,7 +87,6 @@ async function onOpenLink(id: string) {
   try {
     const meta = await drive.openById(id)
     showLinkModal.value = false
-    tab.value = 'my-drive'
     checkForBook(meta)
   } catch (e) {
     linkError.value = e instanceof Error ? e.message : 'Could not open that link.'
@@ -96,10 +98,9 @@ async function onOpenLink(id: string) {
   <div class="flex flex-col h-screen bg-slate-900 text-slate-200">
     <DriveToolbar
       :breadcrumbs="drive.breadcrumbs"
-      :tab="tab"
       @breadcrumb-click="drive.goToBreadcrumb($event)"
-      @tab-change="onTabChange"
       @open-link="showLinkModal = true"
+      @open-reader="forceOpenReader"
     />
 
     <BrowserControls />
