@@ -3,8 +3,6 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useReaderStore } from '../stores/reader'
 import { useDriveStore } from '../stores/drive'
-import { useAutoHide } from '../composables/useAutoHide'
-
 import PageSpread from '../components/PageSpread.vue'
 import ReaderControls from '../components/ReaderControls.vue'
 
@@ -12,7 +10,8 @@ const route = useRoute()
 const router = useRouter()
 const reader = useReaderStore()
 const drive = useDriveStore()
-const { visible: uiVisible } = useAutoHide()
+
+const uiHidden = ref(false)
 
 const folderId = route.params.id as string
 const queryDir = (route.query.dir as string | undefined) === 'rtl' ? 'rtl' : 'ltr'
@@ -91,10 +90,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
       @navigate="onNavigate"
     />
 
-    <!-- header overlay — gradient fades downward so the image bleeds through -->
+    <!-- header overlay -->
     <Transition name="ui">
       <header
-        v-show="uiVisible || reader.loading || reader.totalPages === 0"
+        v-show="!uiHidden || reader.loading || reader.totalPages === 0"
         class="absolute top-0 inset-x-0 z-30 bg-gradient-to-b from-black/80 to-transparent pb-10 pointer-events-none"
       >
         <div class="flex items-center gap-3 px-3 pt-3 pointer-events-auto">
@@ -115,11 +114,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
             @click="copyLink"
             aria-label="Copy link"
           >
-            <!-- checkmark when copied -->
             <svg v-if="copied" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
             </svg>
-            <!-- chain link icon otherwise -->
             <svg v-else class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
             </svg>
@@ -131,8 +128,25 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
     <!-- bottom controls overlay -->
     <ReaderControls
       v-if="!reader.loading && reader.totalPages > 0"
-      :visible="uiVisible"
+      :visible="!uiHidden"
+      @hide="uiHidden = true"
     />
+
+    <!-- floating restore button — shown when UI is hidden -->
+    <Transition name="ui">
+      <button
+        v-if="uiHidden && !reader.loading && reader.totalPages > 0"
+        class="absolute bottom-6 right-6 z-40 p-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white shadow-xl transition-colors"
+        title="Show controls"
+        aria-label="Show controls"
+        @click="uiHidden = false"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+    </Transition>
   </div>
 </template>
 

@@ -40,9 +40,9 @@ function onRightClick() {
 </script>
 
 <template>
-  <div class="overflow-auto bg-slate-950 flex items-start justify-center select-none">
+  <div class="overflow-auto bg-slate-950 flex items-center justify-center select-none min-h-full">
     <div
-      :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center', marginTop: zoom > 1 ? '2rem' : '0' }"
+      :style="{ transform: `scale(${zoom})`, transformOrigin: 'center center' }"
       class="transition-transform duration-150"
     >
       <div class="flex gap-0.5 items-start">
