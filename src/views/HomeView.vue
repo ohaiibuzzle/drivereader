@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDriveStore } from '../stores/drive'
 import { extractDriveId } from '../api/drive'
@@ -52,6 +52,52 @@ function formatDate(ts: number) {
 
 const baseUrl = window.location.href
 
+// --- PWA install ---
+const deferredPrompt = ref<any>(null)
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase())
+const isStandalone =
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (navigator as any).standalone === true
+const showIosHint = ref(false)
+
+async function triggerInstall() {
+  if (deferredPrompt.value) {
+    deferredPrompt.value.prompt()
+    await deferredPrompt.value.userChoice
+    deferredPrompt.value = null
+  } else if (isIos) {
+    showIosHint.value = !showIosHint.value
+  }
+}
+
+// --- Clipboard ---
+async function readFromClipboard() {
+  error.value = ''
+  loading.value = true
+  try {
+    const text = (await navigator.clipboard.readText()).trim()
+    const id = extractDriveId(text) ?? (text.match(/^[a-zA-Z0-9_-]{10,}$/) ? text : null)
+    if (!id) {
+      error.value = 'No Drive folder link found in clipboard.'
+      return
+    }
+    await drive.openById(id)
+    router.push({ name: 'drive' })
+  } catch (e) {
+    error.value = e instanceof DOMException
+      ? 'Clipboard access denied.'
+      : e instanceof Error ? e.message : 'Could not open that folder.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeinstallprompt', (e: Event) => {
+    e.preventDefault()
+    deferredPrompt.value = e
+  })
+})
 </script>
 
 <template>
@@ -100,9 +146,23 @@ const baseUrl = window.location.href
     </div>
 
     <!-- recent folders -->
-    <div v-if="drive.recents.length > 0" class="w-full max-w-lg flex flex-col gap-2">
+    <div class="w-full max-w-lg flex flex-col gap-2">
       <h2 class="text-slate-500 text-xs font-medium uppercase tracking-wider px-1">Recent</h2>
       <ul class="flex flex-col gap-1">
+        <!-- read from clipboard -->
+        <li>
+          <button
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition-colors text-left group"
+            :disabled="loading"
+            @click="readFromClipboard"
+          >
+            <svg class="w-4 h-4 text-slate-500 shrink-0 group-hover:text-slate-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+            </svg>
+            <span class="flex-1 text-slate-500 text-sm group-hover:text-slate-300 transition-colors">Read from clipboard</span>
+          </button>
+        </li>
+        <!-- saved recents -->
         <li v-for="recent in drive.recents" :key="recent.id">
           <button
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition-colors text-left group"
@@ -117,6 +177,22 @@ const baseUrl = window.location.href
           </button>
         </li>
       </ul>
+    </div>
+
+    <!-- PWA install -->
+    <div v-if="!isStandalone" class="flex flex-col items-center gap-2">
+      <button
+        class="flex items-center gap-1.5 text-slate-600 hover:text-slate-400 text-xs transition-colors"
+        @click="triggerInstall"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15M9 12l3 3m0 0l3-3m-3 3V2.25" />
+        </svg>
+        Install as app
+      </button>
+      <p v-if="showIosHint" class="text-slate-500 text-xs text-center max-w-xs px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700/50">
+        Tap <span class="text-slate-300">Share</span>, then <span class="text-slate-300">"Add to Home Screen"</span>.
+      </p>
     </div>
   </div>
 </template>
