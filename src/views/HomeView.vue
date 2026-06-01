@@ -191,7 +191,8 @@ onMounted(() => {
         Install as app
       </button>
       <p v-if="showIosHint" class="text-slate-500 text-xs text-center max-w-xs px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700/50">
-        Tap <span class="text-slate-300">Share</span>, then <span class="text-slate-300">"Add to Home Screen"</span>.
+        iOS: Tap <span class="text-slate-300">Share</span>, then <span class="text-slate-300">"Add to Home Screen"</span>.
+        <span class="block mt-2 text-slate-600 text-xs">This jank is brought to you by Apple Inc.</span>
       </p>
     </div>
   </div>
