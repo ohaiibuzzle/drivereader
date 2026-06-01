@@ -20,7 +20,7 @@ const emit = defineEmits<{ select: [direction: 'ltr' | 'rtl'] }>()
             >
               <span class="text-2xl">→</span>
               <span class="text-sm font-medium">Left to Right</span>
-              <span class="text-xs text-slate-400">Western / Comics</span>
+              <span class="text-xs text-slate-400">Western Comics / Image browsing</span>
             </button>
             <button
               class="flex-1 flex flex-col items-center gap-2 py-4 rounded-xl bg-slate-700 hover:bg-indigo-600 text-slate-300 hover:text-white transition-colors"

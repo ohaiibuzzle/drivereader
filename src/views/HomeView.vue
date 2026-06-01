@@ -63,7 +63,7 @@ const baseUrl = window.location.href
       </svg>
       <h1 class="text-3xl font-semibold text-white tracking-tight">DriveReader</h1>
       <p class="text-slate-400 text-sm max-w-xs">
-        Paste a public Google Drive folder link to read its images as a book.
+        Paste a public Google Drive folder link to browse its images.
       </p>
     </div>
 
