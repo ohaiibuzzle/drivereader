@@ -53,15 +53,8 @@ function handleKey(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', handleKey)
-  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {})
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKey)
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
-})
+onMounted(() => window.addEventListener('keydown', handleKey))
+onUnmounted(() => window.removeEventListener('keydown', handleKey))
 </script>
 
 <template>
