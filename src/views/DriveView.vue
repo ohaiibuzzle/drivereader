@@ -29,9 +29,20 @@ const showLinkModal = ref(false)
 const linkError = ref('')
 
 onMounted(() => {
-  // Redirect to home if there's nothing loaded (e.g. direct navigation to /drive)
   if (!drive.loading && drive.items.length === 0 && !drive.currentFolderId) {
     router.replace({ name: 'home' })
+    return
+  }
+  // Items pre-loaded by openById (home page flow) — run book detection now
+  // since onFileSelect never fired for this navigation.
+  const crumb = drive.breadcrumbs[drive.breadcrumbs.length - 1]
+  if (crumb && drive.items.length > 0) {
+    checkForBook({
+      id: crumb.id,
+      name: crumb.name,
+      mimeType: FOLDER_MIME,
+      modifiedTime: '',
+    })
   }
 })
 
