@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useReaderStore } from '../stores/reader'
 import { useDriveStore } from '../stores/drive'
@@ -16,6 +16,17 @@ const { visible: uiVisible } = useAutoHide()
 
 const folderId = route.params.id as string
 const queryDir = (route.query.dir as string | undefined) === 'rtl' ? 'rtl' : 'ltr'
+
+const copied = ref(false)
+let copyTimer: ReturnType<typeof setTimeout> | null = null
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    copied.value = true
+    if (copyTimer) clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => { copied.value = false }, 2000)
+  })
+}
 
 onMounted(async () => {
   if (reader.folderId !== folderId) {
@@ -97,6 +108,22 @@ onUnmounted(() => window.removeEventListener('keydown', handleKey))
             </svg>
           </button>
           <h1 class="text-white/90 font-medium text-sm truncate flex-1 drop-shadow">{{ reader.folderName }}</h1>
+          <button
+            class="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 transition-colors backdrop-blur-sm shrink-0"
+            :class="copied ? 'text-emerald-400' : 'text-slate-200 hover:text-white'"
+            :title="copied ? 'Copied!' : 'Copy link to this book'"
+            @click="copyLink"
+            aria-label="Copy link"
+          >
+            <!-- checkmark when copied -->
+            <svg v-if="copied" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+            </svg>
+            <!-- chain link icon otherwise -->
+            <svg v-else class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
+            </svg>
+          </button>
         </div>
       </header>
     </Transition>
