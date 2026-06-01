@@ -53,13 +53,20 @@ function handleKey(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => window.addEventListener('keydown', handleKey))
-onUnmounted(() => window.removeEventListener('keydown', handleKey))
+onMounted(() => {
+  window.addEventListener('keydown', handleKey)
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {})
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKey)
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+})
 </script>
 
 <template>
   <!-- Flat stacking context — image fills the full viewport, bars float over it -->
-  <div class="relative h-screen w-screen bg-slate-950 overflow-hidden">
+  <div class="relative h-dvh w-screen bg-slate-950 overflow-hidden">
 
     <!-- loading -->
     <div v-if="reader.loading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500">

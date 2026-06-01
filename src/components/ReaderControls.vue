@@ -7,7 +7,8 @@ const emit = defineEmits<{ hide: [] }>()
 const reader = useReaderStore()
 
 function onProgressInput(e: Event) {
-  reader.goToPage(Number((e.target as HTMLInputElement).value))
+  const raw = Number((e.target as HTMLInputElement).value)
+  reader.goToPage(reader.direction === 'rtl' ? reader.totalPages - 1 - raw : raw)
 }
 
 function onZoomInput(e: Event) {
@@ -25,18 +26,18 @@ function onZoomInput(e: Event) {
             type="range"
             :min="0"
             :max="Math.max(reader.totalPages - 1, 0)"
-            :value="reader.currentIndex"
+            :value="reader.direction === 'rtl' ? reader.totalPages - 1 - reader.currentIndex : reader.currentIndex"
             class="w-full accent-indigo-500 h-1"
             @input="onProgressInput"
           />
         </div>
 
         <div class="flex items-center gap-3 flex-wrap">
-          <!-- prev -->
+          <!-- prev (LTR) / next (RTL) -->
           <button
             class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 disabled:opacity-40 transition-colors"
-            :disabled="reader.currentIndex === 0"
-            @click="reader.prevPage()"
+            :disabled="reader.direction === 'rtl' ? reader.currentIndex >= reader.totalPages - 1 : reader.currentIndex === 0"
+            @click="reader.direction === 'rtl' ? reader.nextPage() : reader.prevPage()"
             aria-label="Previous page"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -49,11 +50,11 @@ function onZoomInput(e: Event) {
             {{ reader.pageLabel }}
           </span>
 
-          <!-- next -->
+          <!-- next (LTR) / prev (RTL) -->
           <button
             class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 disabled:opacity-40 transition-colors"
-            :disabled="reader.currentIndex >= reader.totalPages - 1"
-            @click="reader.nextPage()"
+            :disabled="reader.direction === 'rtl' ? reader.currentIndex === 0 : reader.currentIndex >= reader.totalPages - 1"
+            @click="reader.direction === 'rtl' ? reader.prevPage() : reader.nextPage()"
             aria-label="Next page"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
